@@ -1,6 +1,7 @@
 // Settings + tip feed. Everything lives in the browser; no server, no account.
 
 import { getIncomingTransfers } from "./chain.js";
+import { SITE_URL } from "./site.js";
 
 const KEY = "squeekstage:v1";
 const DEFAULTS = {
@@ -46,8 +47,18 @@ export function resetSettings() {
   }
 }
 
+/**
+ * @typedef {object} ShareSettings
+ * @property {string} [streamer]
+ * @property {string} [accent]
+ * @property {number|string} [minTip]
+ * @property {boolean} [demo]
+ * @property {boolean} [sound]
+ */
+
+/** @param {ShareSettings} [settings] */
 export function overlayUrl({ streamer, accent, minTip, demo, sound } = {}) {
-  const u = new URL(location.href);
+  const u = new URL(SITE_URL);
   u.hash = "#/stage";
   u.search = "";
   u.searchParams.set("obs", "1");
@@ -59,8 +70,9 @@ export function overlayUrl({ streamer, accent, minTip, demo, sound } = {}) {
   return u.toString();
 }
 
+/** @param {ShareSettings} [settings] */
 export function tipUrl({ streamer, accent } = {}) {
-  const u = new URL(location.href);
+  const u = new URL(SITE_URL);
   u.hash = "#/tip";
   u.search = "";
   if (streamer) u.searchParams.set("streamer", streamer);

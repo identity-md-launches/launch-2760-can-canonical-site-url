@@ -1,0 +1,29 @@
+{
+  "externalData": "API requests intentionally aborted, except delayed empty JSON responses for the unsaved-form check; clipboard mocked; ten layout-only test event lines inserted; no wallet or transaction mocked",
+  "browsers": [
+    {
+      "name": "chromium",
+      "status": "tested",
+      "version": "141.0.7390.37"
+    },
+    {
+      "name": "webkit",
+      "status": "unavailable",
+      "reason": "Launch failed: required native WebKit libraries are unavailable on this machine."
+    }
+  ],
+  "checks": [
+    "chromium: custom canonical and primary action visible at 390",
+    "chromium: offline home state offers a recovery action",
+    "chromium: five routes reflow at 320, 390, 768 and 1440; all local assets load",
+    "chromium: inline validation, save, reload, and canonical OBS/chat copy with all settings",
+    "chromium: copy rejection reports a recoverable error; reset restores defaults",
+    "chromium: initial API completion preserves an in-progress setup form",
+    "chromium: test alert is labelled demo and reduced motion stops animation",
+    "chromium: reduced-motion desktop stage fits ten event lines without overlap",
+    "chromium: OBS query-before-hash URL is transparent and hides website controls",
+    "chromium: axe WCAG A/AA audit has no violations on five routes",
+    "chromium: keyboard skip link and honest no-wallet disabled/error states",
+    "chromium: no uncaught script errors or failed local assets"
+  ]
+}

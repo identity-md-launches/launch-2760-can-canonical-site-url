@@ -52,9 +52,7 @@ export async function loadSnapshot() {
     economy: pick(economy) ?? lastSnapshot?.economy ?? null,
     events: pick(events) ?? lastSnapshot?.events ?? null,
     stats: pick(stats) ?? lastSnapshot?.stats ?? null,
-    staleSources: [
-      ["status", status], ["core", core], ["economy", economy], ["events", events], ["stats", stats],
-    ].filter(([, result]) => result.status === "rejected").map(([name]) => name),
+    staleSources: Object.entries({ status, core, economy, events, stats }).filter(([, result]) => result.status === "rejected").map(([name]) => name),
   };
   lastSnapshot = next;
   return next;

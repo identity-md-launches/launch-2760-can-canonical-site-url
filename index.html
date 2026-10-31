@@ -3,23 +3,29 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SqueekStage — live stream companion for Squeekchain</title>
-<meta name="description" content="SqueekStage is a zero-backend stream companion for Squeekchain: a transparent OBS overlay fed by the live hamster economy, plus on-chain SQK tipping for viewers." />
+<title>SqueekStage | Live stream companion for Squeekchain</title>
+<meta name="description" content="A live OBS overlay for Squeekchain and SQK tipping on Sepolia. Set up your stream and share it from squeekstage.online." />
+<link rel="canonical" href="https://squeekstage.online/" />
 <meta name="theme-color" content="#0b0b0d" />
-<meta property="og:title" content="SqueekStage — live stream companion for Squeekchain" />
+<meta property="og:title" content="SqueekStage | Live stream companion for Squeekchain" />
+<meta property="og:url" content="https://squeekstage.online/" />
+<meta property="og:site_name" content="SqueekStage" />
+<meta property="og:image" content="https://squeekstage.online/assets/social.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="SqueekStage: a live OBS overlay and SQK tipping for Squeekchain." />
+<meta name="twitter:card" content="summary_large_image" />
 <meta property="og:description" content="A live wheel-o-meter, block progress and on-chain SQK tip alerts in one OBS overlay. No backend, no custody." />
 <meta property="og:type" content="website" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0b0d'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23f2c230' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%235b7cfa'/%3E%3C/svg%3E" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Quicksand:wght@500;600&display=swap" />
+<link rel="stylesheet" href="./assets/fonts.css" />
 <script>
   // OBS / transparent mode: mark the root before first paint
   try {
     if (new URLSearchParams(location.search).has("obs")) document.documentElement.classList.add("obs");
   } catch {}
 </script>
-<link rel="stylesheet" href="assets/app.css?v=2" />
+<link rel="stylesheet" href="./assets/app.css" />
 </head>
 <body>
 <a class="skip" href="#view">Skip to content</a>
@@ -52,6 +58,6 @@
 
 <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
 
-<script type="module" src="assets/app.js?v=2"></script>
+<script type="module" src="./assets/app.js"></script>
 </body>
 </html>

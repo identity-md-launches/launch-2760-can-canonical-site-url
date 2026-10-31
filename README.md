@@ -1,122 +1,91 @@
 # SqueekStage
 
-**A live stream companion for Squeekchain: one broadcast overlay fed by the hamster economy, plus on-chain SQK tipping.**
+A live OBS overlay for Squeekchain, with SQK tipping on Sepolia.
 
-Squeekchain is a hamster-powered proof-of-work toychain: a real animal on a real wheel produces work,
-work settles into blocks, blocks pay SQK. SqueekStage gives that loop a face for streamers — and a way for
-viewers to take part with real transactions.
+## Custom domain and IMD's Site URL
 
-- **Overlay** (`/?obs=1#/stage`) — transparent 1920×1080 browser source for OBS: block height and progress,
-  lifetime wheel distance, work units, settlements, active days, a settlement ticker, and animated tip alerts.
-- **Tip page** (`#/tip`) — viewers connect a wallet and send SQK straight to the streamer. Plain ERC-20
-  `transfer`, no approvals, no proxy contract, no custody.
-- **Setup** (`#/setup`) — pick the streamer wallet, accent colour, alert threshold, demo feed; copy the OBS URL.
+The website's canonical URL is **https://squeekstage.online/**. This revision adds `rel="canonical"`, `og:url`, a local social image advertised at the custom domain, and custom-domain overlay/tip links. The existing `CNAME` already contained `squeekstage.online`.
 
-No backend. No database. No API keys. No build step.
+**This is a website change, not an update to IMD's job record.** Genesis Code's Site URL value, as described in the request, comes from IMD. HTML metadata, `CNAME`, and a working custom domain cannot write that field. This repository has no IMD management client or supported API for editing it, and no such management tool is exposed to this worker. The IMD record was not changed or verified. No new job was created, no domain configuration was changed, and nothing was published by the worker.
 
-## Why it exists
+Ask the IMD operator to edit the Site URL on the **existing** project/job and confirm the value Genesis Code receives. A copyable request is in [artifacts/canonical-url-request.md](docs/canonical-url-request.md). It has not been sent. Whether IMD exposes that edit, and whether it is free, cannot be established from this website repository. Creating another paid job is not part of this implementation.
 
-The wheel is the product, but viewers only see a hamster. SqueekStage turns the on-chain side of the stream
-into something a chat can read at a glance — and lets that chat pay the streamer in the chain's own token,
-without a payment processor in the middle.
+The site's own address is defined in `src/site.js`. The build checks that the canonical tag, Open Graph URL/image and `CNAME` agree with it. Share URLs use that address even when setup is opened from the old IMD host, an IPFS subpath or localhost. Internal navigation stays on the current host and uses hash routes; the page does not force a redirect. Asset/module/font paths are relative.
 
-Everything the overlay shows is either a public API read or an ERC-20 `Transfer` log, so the numbers can be
-checked by anyone watching. Tips arrive from chain logs rather than a server, which means the overlay
-survives refreshes, OBS restarts and machine changes — nothing to lose.
+## Install, build and preview
 
-## Run it
-
-Any static file server works. ES modules need HTTP, not `file://`.
+Use Node.js 22 or later. The existing plain JavaScript/ES-module stack is retained. The new, isolated build tools and exact lockfile live in `web/`; no existing hosting configuration was changed. There are no third-party JavaScript runtime dependencies. Fonts and the social image are included locally.
 
 ```bash
-cd squeekstage
-python3 -m http.server 8080
-# open http://localhost:8080
+npm ci --prefix web
+npm run --prefix web typecheck
+npm run --prefix web build
+npm run --prefix web test
+npm run --prefix web preview
 ```
 
-Or deploy the folder as-is to Vercel, Netlify, Cloudflare Pages, GitHub Pages or IPFS.
+Open **http://localhost:8080/preview/**. The preview serves the actual `dist/` export at a subpath. Use HTTP rather than opening `index.html` as a file. A different port can be passed with `node scripts/preview.mjs 8081`.
 
-## Put it on stream
+`build` checks JavaScript syntax and metadata consistency, then recreates `dist/` from an allowlist of runtime files. This is a native-module static build; it does not need a bundler or a server at runtime. The finished export, source, `web/package.json`, and `web/package-lock.json` are delivery files. Publish **the contents of `dist/`** through the normal site publisher. `node_modules`, browser downloads, caches and verification scratch output are not delivery files.
 
-1. Open `#/setup`, paste the wallet that should receive tips, pick an accent, save.
-2. Copy the overlay URL (it carries `?obs=1&streamer=0x…`).
-   Query parameters go before the hash route, as in `http://localhost:8080/?obs=1#/stage`.
-3. OBS → **Sources → + → Browser** → paste, size **1920×1080**, tick *Shutdown source when not visible*.
-   Leave *Custom CSS* empty: the page is already transparent.
-4. Share the tip URL in chat.
+## Use it
 
-Open `http://localhost:8080/?demo=1#/stage` to replace real tips with a synthetic feed and preview the overlay without funds.
+- **Home:** live distance, blocks, work and settlement time, with a direct action to open the overlay.
+- **Setup (`#/setup`):** enter the recipient wallet when you have one, choose an overlay colour and alert threshold, save, and copy the OBS or chat link. An empty recipient is allowed for a read-only overlay. Settings are stored in this browser's localStorage; shared links carry the selected settings.
+- **Overlay (`#/stage`):** inspect the wheel, block progress and event feed, copy its OBS URL or trigger a clearly labelled demo alert.
+- **Tips (`#/tip`):** choose a recipient and amount. Sending requires the existing browser-wallet connection, the live token address, a Sepolia balance and a wallet signature. It sends an ERC-20 transfer, without approvals or custody.
 
-## What it reads
+For OBS, open setup, save the settings, then use **Copy for OBS**. Add an OBS Browser source at **1920 × 1080** and paste the URL. Transparent mode is selected with `?obs=1` before `#/stage`, for example `https://squeekstage.online/?obs=1#/stage`. Website chrome is hidden in that mode. Demo feed is explicitly synthetic; live chain statistics still come from the public API. Disable sound in setup for a silent overlay.
 
-| Source | Used for |
-|---|---|
-| `GET /v1/core` | block height, block progress, round, difficulty |
-| `GET /v1/economy/state` | token address/decimals, live supply, staking totals |
-| `GET /v1/events?category=all` | settlement + claim ticker, new-block pulse |
-| `GET /v1/measurement/stats?range=7d` | wheel distance, work units, settlements, active days |
-| `GET /v1/status` | liveness dot (online / stale / offline) |
-| ERC-20 `Transfer` logs | tips |
+The public API and RPC endpoints remain those of the existing app. Source reads use `https://api.squeekchain.com/v1/`: `status`, `core`, `economy/state`, `events`, and `measurement/stats`. SQK transfers are read from Sepolia ERC-20 logs using the token address reported by the API. Missing data is not replaced with fabricated live values. Tipping needs Sepolia test assets and gas; no transaction was submitted during validation.
 
-## What it sends
+Browser settings and wallet permissions are origin-specific. Switching from the old IMD host to the custom domain does not migrate localStorage or wallet permissions. Copying a configured overlay link carries its settings across hosts. Do not use the production-domain copied URLs to test an unpublished local change; navigate the local hash routes instead.
 
-Exactly one transaction type: `transfer(address,uint256)` on the SQK token, signed in the viewer's wallet
-on Sepolia (`11155111`). The app never asks for an approval, never deploys anything, never touches a private key.
+## Validation
 
-## Architecture
+Worker checks on 2026-10-31:
 
-```
-index.html          shell + hash routes
-assets/app.css      design system (Squeekchain palette: #0b0b0d bench, gold #f2c230, blue #5b7cfa)
-assets/app.js       router, views, polling, alert queue, WebAudio blip
-src/api.js          public API client, TTL cache, event → ticker lines
-src/chain.js        EIP-1193 wallet, ERC-20 encode/decode, chunked eth_getLogs, multi-RPC fallback
-src/tips.js         settings store, tip feed, leaderboard, demo feed, share URLs
-src/format.js       BigInt units, distances, relative time
+| Check | Actual result |
+| --- | --- |
+| `npm run --prefix web typecheck` | Passed, all runtime JavaScript checked with TypeScript `checkJs` and `noEmit` |
+| `npm run --prefix web build` | Passed, complete `dist/` with relative runtime URLs |
+| `npm run --prefix web test` | 4 tests passed: host-independent canonical links, setting/encoding preservation, tip-link isolation, export metadata/social image |
+| `npm run --prefix web validate` | Chromium interaction checks passed at 320, 390, 768 and 1440; five routes; zero axe A/AA violations, uncaught script errors or failed local resources |
+| Pinned `taste.mjs` | 16/16 checks passed after corrections at 320, 390 and 1440 |
+| WebKit | Browser downloaded, but launch failed because required native libraries are unavailable; Safari behavior is unverified |
+
+Browser checks exercise save/reload/reset, invalid fields, custom-domain OBS/chat copying, clipboard rejection, delayed API completion during form editing, demo alerts, reduced motion, transparent OBS mode, keyboard skipping and no-wallet states. Clipboard is mocked in the automated run; API requests are deliberately failed except for one delayed empty-response test. The separate browser-tool inspection and online design probe load real public API data. No wallet or transaction result is fabricated.
+
+For repeatable browser checks after installation:
+
+```bash
+web/node_modules/.bin/playwright install chromium webkit
+npm run --prefix web validate
 ```
 
-Design notes:
+The validation script manages and closes its own local HTTP server and browsers. Scratch reports go in `test/scratch/interactions/`. During this assignment the pinned probe was also run with `IMD_PLAYWRIGHT` pointing to `web/node_modules/playwright/index.mjs`, and temporary browser binaries outside the repository:
 
-- **No dependencies.** The ERC-20 calls are ~40 lines of ABI encoding instead of a 300 KB SDK.
-- **Fails soft.** Every API read keeps the last good snapshot; a dead endpoint shows `stale`, not a blank stage.
-- **Cheap reads.** TTL caches (3–30 s) and a 6 000-block log window in 2 000-block chunks keep public RPCs happy.
-- **Auditable.** Alert amounts come from chain logs; the same numbers appear on any Sepolia explorer.
+```bash
+node .imd/reads/skills/design-critic/scripts/taste.mjs --out test/scratch/taste
+```
 
-## Limits
+Pinned inputs are removed from the delivered project; the probe command needs the supplied input to be present. The recorded [design review and validation](VALIDATION.md), [probe result](docs/validation/taste.json), [interaction result](docs/validation/interactions.json) and selected [screenshots](docs/validation/screenshots/) remain available. [DESIGN.md](DESIGN.md) documents the final implementation.
 
-- Tips are public on chain — amounts and addresses are visible to everyone.
-- The log window is bounded (≈20 h of Sepolia blocks). For a busy stream, point `SEPOLIA.rpc` at a dedicated endpoint
-  and widen `maxChunks`.
-- The overlay assumes the Squeekchain deployment the public API reports; if the chain is redeployed, the app follows
-  the API automatically because token and staking addresses are read at runtime, never hardcoded.
+Limits: the probe does not measure contrast over gradients, arbitrary OBS video or user-selected overlay colours. A screen reader, physical phone, native 200% browser zoom, real-wallet signing, OS clipboard permission behavior and a working WebKit runtime were not tested. IMD's Site URL and Genesis Code integration remain an external platform change.
 
-## Roadmap
+## Source map
 
-- Twitch/YouTube chat commands (`!tip`) that build the same transaction.
-- Wheel-speed "cheer" tiers: auto-pick an alert sound from the tip size.
-- Optional 24 h leaderboard persisted per stream.
+| Path | Purpose |
+| --- | --- |
+| `index.html`, `assets/app.js`, `assets/app.css` | Shell, hash routes, views, UI and overlay |
+| `src/site.js` | Preferred public site URL |
+| `src/tips.js` | Settings, share links, tip feed and demo feed |
+| `src/api.js`, `src/chain.js`, `src/format.js` | API reads, existing wallet/ERC-20 logic, numeric formatting |
+| `assets/fonts/`, `assets/social.png`, `assets/hamster.svg` | Local runtime assets and font licenses |
+| `scripts/`, `test/site.test.mjs`, `jsconfig.json`, `web/` | Build, preview, validation and locked development tooling |
+| `dist/` | Complete static export for the publisher |
+| `worker.js`, `wrangler.jsonc` | Existing optional Cloudflare integration, retained unchanged |
 
-## License
+## License and guidance attribution
 
-MIT.
-
-
-## Deploy to Cloudflare Workers
-
-The repository includes a Cloudflare Worker that serves the static site through the Workers Static Assets binding. Requests pass through the Worker, and `/health` returns JSON to confirm the Worker is running. No secrets or backend services are required.
-
-Production deployment: <https://squeekstage.uncle0-dev.workers.dev/>. Health check: <https://squeekstage.uncle0-dev.workers.dev/health>.
-
-1. Install Node.js, then sign in to Cloudflare from this project directory:
-
-   ```bash
-   npx wrangler@4.30.0 login
-   ```
-
-2. Deploy the Worker and site:
-
-   ```bash
-   npx wrangler@4.30.0 deploy
-   ```
-
-For a local preview, run `npx wrangler@4.30.0 dev`. The Worker is configured in `wrangler.jsonc`; `.assetsignore` keeps project and deployment files out of the public asset bundle. To connect `squeekstage.online`, add it as a Workers custom domain in Cloudflare after deployment. The current Hostinger DNS still points the custom domain to GitHub Pages until changed.
+Project code: MIT, see `LICENSE`. Bundled fonts use the SIL Open Font License; individual notices are in `assets/fonts/`. Design review used the pinned Better Interface guide by Jakub Krehel (MIT) and its adapted documentation guidance from Paul Bakaus's Impeccable (Apache-2.0). Source commits, notices and included licenses are recorded in [docs/design-guidance-NOTICE.md](docs/design-guidance-NOTICE.md) and [docs/design-guidance-LICENSE.txt](docs/design-guidance-LICENSE.txt).
